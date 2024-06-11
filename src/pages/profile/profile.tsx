@@ -1,5 +1,5 @@
 import { ProfileUI } from '@ui-pages';
-import { FC, SyntheticEvent, useEffect, useState } from 'react';
+import { FC, SyntheticEvent, useEffect, useState, FormEvent } from 'react';
 import { updateUserApi } from '@api';
 import { getUser } from '../../slises/client/activity';
 import { useDispatch, useSelector } from '../../services/store';
@@ -42,12 +42,12 @@ export const Profile: FC = () => {
     formValue.email !== user?.email ||
     !!formValue.password;
 
-  const handleSubmit = (e: SyntheticEvent) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     dispatch(() => updateUser());
   };
 
-  const handleCancel = (e: SyntheticEvent) => {
+  const handleCancel = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormValue({
       name: user?.name ?? '',

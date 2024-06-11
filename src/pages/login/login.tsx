@@ -17,9 +17,6 @@ export const Login: FC = () => {
     }
     dispatch(loginUser({ email, password }));
   };
-  if (isAuthenticated) {
-    return <Navigate to={'/'} />;
-  }
 
   return (
     <LoginUI
