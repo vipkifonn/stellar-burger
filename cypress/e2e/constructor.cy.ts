@@ -5,6 +5,14 @@ const ID_BUN = '643d69a5c3f7b9001cfa093d';
 const MAIN_SELECTOR = `[data-cy=${ID_MAIN}]`;
 const BUN_SELECTOR = `[data-cy=${ID_BUN}]`;
 
+const ADD_BUTTON_SELECTOR = 'button';
+const MODALS_SELECTOR = '#modals';
+const ORDER_BUTTON_TEXT = 'Оформить заказ';
+const ORDER_NUMBER_SELECTOR = 'h2';
+const BURGER_CONTAINER_SELECTOR = '[data-cy=burger-container]';
+const COUNTER_NUM_SELECTOR = '.counter__num';
+const ADD_TEXT = 'Добавить';
+
 beforeEach(() => {
   cy.intercept('GET', `${URL_API}/ingredients`, {
     fixture: 'ingredients.json'
@@ -35,34 +43,34 @@ afterEach(() =>{
 describe('Тестирование работы ингредиентов', () => {
   it('Добавление ингредиента из списка в конструктор', () => {
     cy.get(MAIN_SELECTOR)
-      .children('button')
-      .contains('Добавить')
+      .children(ADD_BUTTON_SELECTOR)
+      .contains(ADD_TEXT)
       .click();
     cy.get(MAIN_SELECTOR)
-      .find('.counter__num')
+      .find(COUNTER_NUM_SELECTOR)
       .should('contain', '1');
   });
 
   it('Тестирование работы модального окна', () => {
     cy.get(MAIN_SELECTOR).click();
-    cy.get('#modals').should('be.not.empty');
-    cy.get('#modals').find('button').click();
+    cy.get(MODALS_SELECTOR).should('be.not.empty');
+    cy.get(MODALS_SELECTOR).find(ADD_BUTTON_SELECTOR).click();
   });
 });
 
 describe('Тестирование оформления заказа', () => {
   it('Проверка оформления заказа', () => {
     cy.get(MAIN_SELECTOR)
-      .children('button')
-      .contains('Добавить')
+      .children(ADD_BUTTON_SELECTOR)
+      .contains(ADD_TEXT)
       .click();
     cy.get(BUN_SELECTOR)
-      .children('button')
-      .contains('Добавить')
+      .children(ADD_BUTTON_SELECTOR)
+      .contains(ADD_TEXT)
       .click();
-    cy.get('button').contains('Оформить заказ').click();
-    cy.get('#modals').find('h2').contains('44819');
-    cy.get('#modals').find('button').click();
-    cy.get('[data-cy=burger-container]').find('li').should('not.exist');
+    cy.get(ADD_BUTTON_SELECTOR).contains(ORDER_BUTTON_TEXT).click();
+    cy.get(MODALS_SELECTOR).find(ORDER_NUMBER_SELECTOR).contains('44819');
+    cy.get(MODALS_SELECTOR).find(ADD_BUTTON_SELECTOR).click();
+    cy.get(BURGER_CONTAINER_SELECTOR).find('li').should('not.exist');
   });
 });
