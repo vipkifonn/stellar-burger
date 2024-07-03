@@ -1,26 +1,30 @@
 import { FC, SyntheticEvent, useState } from 'react';
 import { LoginUI } from '@ui-pages';
-import { Navigate } from 'react-router-dom';
-import { loginUser } from '../../slises/client/activity';
 import { useDispatch, useSelector } from '../../services/store';
+import { login } from '../../services/actions';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { getErrorMessage } from '@selectors';
 
 export const Login: FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const dispatch = useDispatch();
-  const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const errorMessage = useSelector(getErrorMessage) || undefined;
 
   const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      return;
+    dispatch(login({ email, password }));
+    if (!errorMessage) {
+      navigate(location.state?.from || { pathname: '/' });
     }
-    dispatch(loginUser({ email, password }));
   };
 
   return (
     <LoginUI
-      errorText=''
+      errorText={errorMessage}
       email={email}
       setEmail={setEmail}
       password={password}

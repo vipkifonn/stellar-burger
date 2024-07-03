@@ -1,39 +1,25 @@
 import { ProfileUI } from '@ui-pages';
-import { FC, SyntheticEvent, useEffect, useState, FormEvent } from 'react';
-import { updateUserApi } from '@api';
-import { getUser } from '../../slises/client/activity';
+import { FC, SyntheticEvent, useEffect, useState } from 'react';
+import { getErrorMessage, getUser } from '@selectors';
+import { updateUser } from '../../services/actions';
 import { useDispatch, useSelector } from '../../services/store';
 
 export const Profile: FC = () => {
-  /** TODO: взять переменную из стора */
-
+  const user = useSelector(getUser);
+  const errorMessage = useSelector(getErrorMessage) || '';
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.user.user);
-
-  useEffect(() => {
-    dispatch(getUser());
-  }, []);
-
-  const updateUser = async () => {
-    const updatedUser = await updateUserApi({
-      email: formValue.email,
-      name: formValue.name,
-      password: formValue.password
-    });
-    return updatedUser;
-  };
 
   const [formValue, setFormValue] = useState({
-    name: user?.name ?? '',
-    email: user?.email ?? '',
+    name: user ? user.name : '',
+    email: user ? user.email : '',
     password: ''
   });
 
   useEffect(() => {
     setFormValue((prevState) => ({
       ...prevState,
-      name: user?.name ?? '',
-      email: user?.email ?? ''
+      name: user?.name || '',
+      email: user?.email || ''
     }));
   }, [user]);
 
@@ -42,16 +28,16 @@ export const Profile: FC = () => {
     formValue.email !== user?.email ||
     !!formValue.password;
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();
-    dispatch(() => updateUser());
+    dispatch(updateUser(formValue));
   };
 
-  const handleCancel = (e: FormEvent<HTMLFormElement>) => {
+  const handleCancel = (e: SyntheticEvent) => {
     e.preventDefault();
     setFormValue({
-      name: user?.name ?? '',
-      email: user?.email ?? '',
+      name: user ? user.name : '',
+      email: user ? user.email : '',
       password: ''
     });
   };
@@ -66,6 +52,7 @@ export const Profile: FC = () => {
   return (
     <ProfileUI
       formValue={formValue}
+      updateUserError={errorMessage}
       isFormChanged={isFormChanged}
       handleCancel={handleCancel}
       handleSubmit={handleSubmit}

@@ -1,137 +1,113 @@
-import '../../index.css';
-import styles from './app.module.css';
-import React, { ReactNode } from 'react';
 import {
   ConstructorPage,
   Feed,
-  ForgotPassword,
   Login,
-  NotFound404,
+  Register,
+  ForgotPassword,
+  ResetPassword,
   Profile,
   ProfileOrders,
-  Register,
-  ResetPassword
+  NotFound404
 } from '@pages';
-import { AppHeader, IngredientDetails, Modal, OrderInfo } from '@components';
+import '../../index.css';
+import styles from './app.module.css';
+import { AppHeader, Modal, IngredientDetails, OrderInfo } from '@components';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { AuthRoute, UnAuthRoute } from '../../protected-route/protected-route';
 import { useEffect } from 'react';
-import { fetchIngredients } from '../../slises/ingridient/activity';
-import { ProtectedRoute } from '../../protected-route';
-import { Route, Routes, useLocation } from 'react-router-dom';
-import { checkUserAuth } from '../../slises/client/activity';
 import { useDispatch } from '../../services/store';
+import { checkUserAuth, getIngredients } from '../../services/actions';
 
-export const App = () => {
+const App = () => {
   const location = useLocation();
-  const background = location.state?.background;
-  const onClose = () => {
-    history.back();
-  };
-
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
+    dispatch(getIngredients());
     dispatch(checkUserAuth());
-    dispatch(fetchIngredients());
-  }, []);
+  }, [dispatch]);
+
+  const backgroundLocation = location.state?.background;
 
   return (
     <div className={styles.app}>
-      <AppHeader />
-      <Routes location={background || location}>
-        <Route path='/' element={<ConstructorPage />} />
-        <Route path='/feed' element={<Feed />} />
-        <Route
-          path='/login'
-          element={
-            <ProtectedRoute onlyUnAuth>
-              <Login />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path='/register'
-          element={
-            <ProtectedRoute onlyUnAuth>
-              <Register />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path='/forgot-password'
-          element={
-            <ProtectedRoute onlyUnAuth>
-              <ForgotPassword />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path='/reset-password'
-          element={
-            <ProtectedRoute onlyUnAuth>
-              <ResetPassword />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path='/profile'
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path='/profile/orders'
-          element={
-            <ProtectedRoute>
-              <ProfileOrders />
-            </ProtectedRoute>
-          }
-        />
-        <Route path='/feed/:id' element={<OrderInfo />} />
-        <Route path='/ingredients/:id' element={<IngredientDetails />} />
-        <Route
-          path='/profile/orders/:number'
-          element={
-            <ProtectedRoute>
-              <OrderInfo />
-            </ProtectedRoute>
-          }
-        />
-        <Route path='*' element={<NotFound404 />} />
+      <Routes location={backgroundLocation || location}>
+        <Route path='/' element={<AppHeader />}>
+          <Route index element={<ConstructorPage />} />
+          <Route path='/feed' element={<Feed />} />
+          <Route
+            path='/login'
+            element={<UnAuthRoute component={<Login />} />}
+          />
+          <Route
+            path='/register'
+            element={<UnAuthRoute component={<Register />} />}
+          />
+          <Route
+            path='/forgot-password'
+            element={<UnAuthRoute component={<ForgotPassword />} />}
+          />
+          <Route
+            path='/reset-password'
+            element={<UnAuthRoute component={<ResetPassword />} />}
+          />
+          <Route
+            path='/profile'
+            element={<AuthRoute component={<Profile />} />}
+          />
+          <Route
+            path='/profile/orders'
+            element={<AuthRoute component={<ProfileOrders />} />}
+          />
+          <Route path='*' element={<NotFound404 />} />
+        </Route>
       </Routes>
-      {background && (
+      {backgroundLocation && (
         <Routes>
           <Route
-            path='/feed/:id'
+            path='/ingredients/:id'
             element={
-              <Modal onClose={onClose} title={''}>
-                <OrderInfo />
+              <Modal
+                title={'Описание ингредиента'}
+                onClose={() => {
+                  navigate(-1);
+                }}
+              >
+                <IngredientDetails />
               </Modal>
             }
           />
           <Route
-            path='/ingredients/:id'
+            path='/feed/:number'
             element={
-              <Modal onClose={onClose} title={'Детали ингредиента'}>
-                <IngredientDetails />
+              <Modal
+                title={'Информация по заказу'}
+                onClose={() => {
+                  navigate(-1);
+                }}
+              >
+                <OrderInfo />
               </Modal>
             }
           />
           <Route
             path='/profile/orders/:number'
             element={
-              <ProtectedRoute>
-                <Modal onClose={onClose} title={''}>
-                  <OrderInfo />
-                </Modal>
-              </ProtectedRoute>
+              <Modal
+                title={'Информация по заказу'}
+                onClose={() => {
+                  navigate(-1);
+                }}
+              >
+                <AuthRoute component={<OrderInfo />} />
+              </Modal>
             }
           />
-          <Route path='*' element={<NotFound404 />} />
         </Routes>
       )}
     </div>
   );
 };
+
 export default App;
